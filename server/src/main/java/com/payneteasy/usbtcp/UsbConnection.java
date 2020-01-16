@@ -13,20 +13,22 @@ import java.nio.IntBuffer;
 public class UsbConnection implements Closeable {
 
     private static final Logger LOG     = LoggerFactory.getLogger(UsbConnection.class);
-    private static final long TIMEOUT_MS = 10_000;
-
 
     private final Context      context;
     private final DeviceHandle handle;
     private final byte         endpointOut;
     private final byte         endpointIn;
     private final int          interfaceNumber;
+    private final long         usbReadTimeoutMs;
+    private final long         usbWriteTimeoutMs;
 
-    public UsbConnection(UsbAddress aAddress) throws IOException {
+    public UsbConnection(UsbAddress aAddress, long aUsbReadTimeoutMs, long aUsbWriteTimeoutMs) throws IOException {
         context = new Context();
         endpointIn = aAddress.getEndpointIn();
         endpointOut = aAddress.getEndpointOut();
         interfaceNumber = aAddress.getInterfaceNumber();
+        usbReadTimeoutMs = aUsbReadTimeoutMs;
+        usbWriteTimeoutMs = aUsbWriteTimeoutMs;
 
         checkResult(LibUsb.init(context), "init");
 
@@ -53,7 +55,7 @@ public class UsbConnection implements Closeable {
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(data.length);
         buffer.put(data);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int       result      = LibUsb.bulkTransfer(handle, endpointOut , buffer, transferred, TIMEOUT_MS);
+        int       result      = LibUsb.bulkTransfer(handle, endpointOut , buffer, transferred, usbWriteTimeoutMs);
         if (result != LibUsb.SUCCESS) {
             throw new LibUsbException("Unable to send data", result);
         }
@@ -63,7 +65,7 @@ public class UsbConnection implements Closeable {
     public byte[] read(int size) {
         ByteBuffer buffer      = BufferUtils.allocateByteBuffer(size);
         IntBuffer  transferred = BufferUtils.allocateIntBuffer();
-        int        result      = LibUsb.bulkTransfer(handle, endpointIn, buffer, transferred, TIMEOUT_MS);
+        int        result      = LibUsb.bulkTransfer(handle, endpointIn, buffer, transferred, usbReadTimeoutMs);
         if (result != LibUsb.SUCCESS) {
             throw new LibUsbException("Unable to read data", result);
         }

@@ -14,8 +14,17 @@ public class UsbTcpServer {
 
     private final ServerSocket serverSocket;
 
-    public UsbTcpServer() throws IOException {
-        serverSocket = new ServerSocket();
+    private final int          socketReadTimeoutMs;
+    private final long         usbReadTimeoutMs;
+    private final long         usbWriteTimeoutMs;
+
+
+    public UsbTcpServer(int aSocketReadTimeoutMs, long aUsbReadTimeoutMs, long aUsbWriteTimeoutMs) throws IOException {
+        socketReadTimeoutMs = aSocketReadTimeoutMs;
+        usbReadTimeoutMs    = aUsbReadTimeoutMs;
+        usbWriteTimeoutMs   = aUsbWriteTimeoutMs;
+
+        serverSocket        = new ServerSocket();
     }
 
     public void startAndWait(SocketAddress aAddress, RunningState aState, UsbAddress aUsbAddress) throws IOException {
@@ -27,10 +36,10 @@ public class UsbTcpServer {
             Socket socket = serverSocket.accept();
             try {
                 socket.setTcpNoDelay(true);
-                socket.setSoTimeout(20_000);
+                socket.setSoTimeout(socketReadTimeoutMs);
                 LOG.debug("Connected to {}", socket);
 
-                try(UsbConnection usbConnection = new UsbConnection(aUsbAddress)) {
+                try(UsbConnection usbConnection = new UsbConnection(aUsbAddress, usbReadTimeoutMs, usbWriteTimeoutMs)) {
                     SocketWriteThread writeThread = new SocketWriteThread(socket, aState, usbConnection);
                     writeThread.start();
                     SocketConnectionReadThread socketConnectionThread = new SocketConnectionReadThread(socket, aState, usbConnection);

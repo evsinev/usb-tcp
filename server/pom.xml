@@ -57,6 +57,11 @@
             <artifactId>usb4java</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.payneteasy</groupId>
+            <artifactId>startup-parameters</artifactId>
+        </dependency>
+        
     </dependencies>
 
     <profiles>
@@ -69,7 +74,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.payneteasy.usbtcp.ListDevicesApplication</mainClass>
+                                    <mainClass>com.payneteasy.usbtcp.UsbTcpServerApplication</mainClass>
                                     <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                                 </manifest>
                             </archive>

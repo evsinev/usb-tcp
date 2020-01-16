@@ -20,7 +20,7 @@ public class GetStatusUsbConnectionApplication {
                 .endpointIn(0x81)
                 .build();
 
-        try (UsbConnection connection = new UsbConnection(usbAddress)) {
+        try (UsbConnection connection = new UsbConnection(usbAddress, 10_000, 10_000)) {
             connection.write(HexUtil.parseHex("1D 65 02")); // eject
             connection.write("hello \nhello 2\n".getBytes());
             connection.write(HexUtil.parseHex("1B 69"));  // cut
